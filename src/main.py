@@ -25,7 +25,8 @@ class Main:
             self.test_data[k] = self.HtmlMaker.get_test_data()
             self.submissions[k] = {'result': '', 'code': ''}
             self.HtmlMaker.save_problem(k, '.')
-        self.Timer.set_time(self.options['contest_info']['start_time'], self.options['contest_info']['end_time'])
+        if self.options['mode'] == 'contest':
+            self.Timer.set_time(self.options['contest_info']['start_time'], self.options['contest_info']['end_time'])
 
     def wait_to_start(self):
         if self.options['mode'] == 'contest':
