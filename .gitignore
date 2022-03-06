@@ -1,0 +1,9 @@
+*.html
+*.json
+*.cpp
+*.exe
+*~
+*.pyc
+materials
+output
+__pycache__
