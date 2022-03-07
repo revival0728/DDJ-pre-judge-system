@@ -51,3 +51,6 @@ class ContestModeError(Exception):
     def __init__(self, msg: str):
         self.msg = msg
         super().__init__()
+
+class ProblemNotFound(Exception):
+    pass

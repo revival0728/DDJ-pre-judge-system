@@ -39,11 +39,15 @@ class Main:
             self.Timer.is_end_time()
 
     def show_problem(self, pid: str):
+        if not (pid in self.options['problem_list']):
+            raise Msg.ProblemNotFound
         file_path = str(pathlib.Path(__file__).parent.resolve()).replace('\\', '/')
         file_path += '/' + pid + '.html'
         webbrowser.open(f'file:///{file_path}')
 
     def update_submissions(self, pid: str, result: str, code: str):
+        if not (pid in self.options['problem_list']):
+            raise Msg.ProblemNotFound
         if self.submissions[pid]['result'] == 'AC' and result == 'AC':
             self.submissions[pid]['code'] = code
         else:
@@ -51,6 +55,8 @@ class Main:
             self.submissions[pid]['code'] = code
 
     def submit_problem(self, pid: str, file_np: str):
+        if not (pid in self.options['problem_list']):
+            raise Msg.ProblemNotFound
         process_output = lambda x: x.strip().replace('\r', '').split('\n')
         submit_code = ''
         with open(file_np, 'r', encoding='utf-8') as user_file:
@@ -62,9 +68,9 @@ class Main:
                         .replace('/*[USER CODE]*/', submit_code)
                         .replace('/*[SUBMIT IDS]*/', f'#define __{pid}__')
                     )
+        comp_outs, comp_errs = None, None
+        run_outs, run_errs = None, None
         if self.options['language'] in ('c++'): # Language that needs to compile
-            comp_outs, comp_errs = None, None
-            run_outs, run_errs = None, None
             compiler = subprocess.Popen(self.options['submit_commands']['compile'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
                 comp_outs, comp_errs = compiler.communicate(timeout=10)
@@ -75,31 +81,31 @@ class Main:
             if compiler.returncode != 0:
                 self.update_submissions(pid, 'CE', submit_code)
                 raise Msg.CompileError(comp_errs)
-            run = subprocess.Popen(self.options['submit_commands']['run'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-                run_outs, run_errs = run.communicate(input=self.test_data[pid]['input'].encode('utf-8'), timeout=10)
-            except subprocess.TimeoutExpired:
-                run.kill()
-                run_outs, run_errs = run.communicate()
-                self.update_submissions(pid, 'TLE', submit_code)
-                raise Msg.TimeLimitExceed(10)
-            run_outs, run_errs = run_outs.decode('utf-8'), run_errs.decode('utf-8')
-            if run.returncode != 0:
-                self.update_submissions(pid, 'RE', submit_code)
-                raise Msg.RuntimeError(run_errs)
-            user_list, ans_list = process_output(run_outs), process_output(self.test_data[pid]['output'])
-            if len(ans_list) > len(user_list):
+        run = subprocess.Popen(self.options['submit_commands']['run'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            run_outs, run_errs = run.communicate(input=self.test_data[pid]['input'].encode('utf-8'), timeout=10)
+        except subprocess.TimeoutExpired:
+            run.kill()
+            run_outs, run_errs = run.communicate()
+            self.update_submissions(pid, 'TLE', submit_code)
+            raise Msg.TimeLimitExceed(10)
+        run_outs, run_errs = run_outs.decode('utf-8'), run_errs.decode('utf-8')
+        if run.returncode != 0:
+            self.update_submissions(pid, 'RE', submit_code)
+            raise Msg.RuntimeError(run_errs)
+        user_list, ans_list = process_output(run_outs), process_output(self.test_data[pid]['output'])
+        if len(ans_list) > len(user_list):
+            self.update_submissions(pid, 'NA', submit_code)
+            raise Msg.NotAccept(len(user_list)+1, ans_list[len(user_list)], '')
+        if len(ans_list) < len(user_list):
+            self.update_submissions(pid, 'OLE', submit_code)
+            raise Msg.OutputLimitExceed(len(ans_list), len(user_list))
+        for line, (user, ans) in enumerate(zip(user_list, ans_list)):
+            if user.strip() != ans.strip():
                 self.update_submissions(pid, 'NA', submit_code)
-                raise Msg.NotAccept(len(user_list)+1, ans_list[len(user_list)], '')
-            if len(ans_list) < len(user_list):
-                self.update_submissions(pid, 'OLE', submit_code)
-                raise Msg.OutputLimitExceed(len(ans_list), len(user_list))
-            for line, (user, ans) in enumerate(zip(user_list, ans_list)):
-                if user.strip() != ans.strip():
-                    self.update_submissions(pid, 'NA', submit_code)
-                    raise Msg.NotAccept(line+1, ans, user)
-            self.update_submissions(pid, 'AC', submit_code)
-            raise Msg.Accept()
+                raise Msg.NotAccept(line+1, ans, user)
+        self.update_submissions(pid, 'AC', submit_code)
+        raise Msg.Accept()
 
     def show_timer(self):
         if self.options['mode'] == 'practice':
@@ -114,6 +120,8 @@ class Main:
             )
 
     def dump_submit_file(self, pid: str):
+        if not (pid in self.options['problem_list']):
+            raise Msg.ProblemNotFound
         if self.options['mode'] == 'contest':
             raise Msg.ContestModeError('you cannot dump out the files before contest ended')
         if self.options['language'] in ('c++'):
