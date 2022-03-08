@@ -64,7 +64,7 @@ class Timer:
             raise Msg.ContestOver
         left = until_start
         if left <= 0:
-            return
+            raise Msg.ContestStarted
         while left > 0:
             print(f'{_c("[", "cyan")}Until Start{_c("]", "cyan")} {self._progress_line(until_start, left, 90)}', end='\r')
             time.sleep(1)
