@@ -44,8 +44,6 @@ class Timer:
         else:
             color = 'red'
         block_count = 1 - (left/until_start)
-        if abs(block_count-1) <= 0.1:
-            block_count = 1
         for i in range(int(block_count*line_len)):
             line[i] = _c(ch, color)
         for i in line:
@@ -65,10 +63,13 @@ class Timer:
         if time.mktime(self.end_time) - now_time <= 0:
             raise Msg.ContestOver
         left = until_start
+        if left <= 0:
+            return
         while left > 0:
             print(f'{_c("[", "cyan")}Until Start{_c("]", "cyan")} {self._progress_line(until_start, left, 90)}', end='\r')
             time.sleep(1)
             left -= 1
+        print(f'{_c("[", "cyan")}Until Start{_c("]", "cyan")} {self._progress_line(1, 0, 90)}', end='\r')
         print()
         raise Msg.ContestStarted
 
@@ -89,6 +90,7 @@ class Timer:
             print(f'{_c("[", "cyan")}Time Left{_c("]", "cyan")} {self._progress_line(left, left-count, 90)}', end='\r')
             time.sleep(1)
             count += 1
+        print(f'{_c("[", "cyan")}Time Left{_c("]", "cyan")} {self._progress_line(1, 0, 90)}', end='\r')
         print()
 
     def _calc_yday(self, t: list):

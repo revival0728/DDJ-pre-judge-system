@@ -2,9 +2,11 @@ import sys
 import os
 import Msg
 from termcolor import colored as _c
+import colorama
 
 class IO:
     def __init__(self, main_obj: object):
+        colorama.init()
         self.help_text = f'''\
 {_c("******************************************************************************************************", "cyan")}
 
@@ -14,6 +16,7 @@ You can enter the following command to "Submit" or "View a Problem"
     - {self._command_info("help", "", "show this text")}
     - {self._command_info("timer", "", "show the timer in the terminal")}
     - {self._command_info("dump", "[Problem ID]", "dump a specific problem submission to SUBMIT_FILE.cpp")}
+    - {self._command_info("status", "", "show the submit result of each problem")}
 
 {_c("******************************************************************************************************", "cyan")}
 '''
@@ -23,7 +26,8 @@ You can enter the following command to "Submit" or "View a Problem"
             'submit': self._submit, 
             'help': self._help,
             'timer': self._timer,
-            'dump': self._dump
+            'dump': self._dump,
+            'status': self._status
         }
 
     def _command_info(self, command: str, args: str, info: str):
@@ -63,6 +67,21 @@ You can enter the following command to "Submit" or "View a Problem"
         self.react.dump_submit_file(args[0])
         self.output('system', f'problem {args[0]} successfully dumped')
 
+    def _status(self, args: tuple):
+        if len(args) != 0:
+            self._argument_err_msg(0, len(args))
+            return
+        result = self.react.get_status()
+        print()
+        for p in result:
+            if result[p] == 'AC':
+                print(f'\t- {p}: {_c("[", "cyan")}{_c(result[p], "green")}{_c("]", "cyan")}')
+            elif result[p] == '-':
+                print(f'\t- {p}: {_c("[", "cyan")}{result[p]}{_c("]", "cyan")}')
+            else:
+                print(f'\t- {p}: {_c("[", "cyan")}{_c(result[p], "red")}{_c("]", "cyan")}')
+        print()
+
     def start(self):
         _input = input('Please enter init file path: ')
         if _input == '':
@@ -99,10 +118,10 @@ You can enter the following command to "Submit" or "View a Problem"
                     continue
                 self.all_command[commands[0]](tuple(commands[1:]))
                 self.react.main()
-            except Msg.NotAccept as sr:
-                self.output(_c('NA', 'red'), f'At line {sr.at_line}\n{_c("Your answer: ", "blue")}\n{sr.user_output}\n{_c("Correct answer:", "blue")}\n{sr.correct_output}')
+            except Msg.WrongAnswer as sr:
+                self.output(_c('WA', 'red'), f'At line {sr.at_line}\n{_c("Your answer: ", "blue")}\n{sr.user_output}\n{_c("Correct answer:", "blue")}\n{sr.correct_output}')
             except Msg.CompileError as sr:
-                self.output(_c('CE', 'red'), f'Compiler message:\n{sr.compile_msg}')
+                self.output(_c('CE', 'red'), f'{_c("Compiler message: ", "blue")}\n{sr.compile_msg}')
             except Msg.TimeLimitExceed as sr:
                 self.output(_c('TLE', 'red'), f'Execution time: {sr.execution_time}s')
             except Msg.OutputLimitExceed as sr:

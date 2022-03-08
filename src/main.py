@@ -50,7 +50,7 @@ class Main:
             raise Msg.ProblemNotFound
         if self.submissions[pid]['result'] == 'AC' and result == 'AC':
             self.submissions[pid]['code'] = code
-        else:
+        elif self.submissions[pid]['result'] != 'AC':
             self.submissions[pid]['result'] = result
             self.submissions[pid]['code'] = code
 
@@ -95,15 +95,15 @@ class Main:
             raise Msg.RuntimeError(run_errs)
         user_list, ans_list = process_output(run_outs), process_output(self.test_data[pid]['output'])
         if len(ans_list) > len(user_list):
-            self.update_submissions(pid, 'NA', submit_code)
-            raise Msg.NotAccept(len(user_list)+1, ans_list[len(user_list)], '')
+            self.update_submissions(pid, 'WA', submit_code)
+            raise Msg.WrongAnswer(len(user_list)+1, ans_list[len(user_list)], '')
         if len(ans_list) < len(user_list):
             self.update_submissions(pid, 'OLE', submit_code)
             raise Msg.OutputLimitExceed(len(ans_list), len(user_list))
         for line, (user, ans) in enumerate(zip(user_list, ans_list)):
             if user.strip() != ans.strip():
-                self.update_submissions(pid, 'NA', submit_code)
-                raise Msg.NotAccept(line+1, ans, user)
+                self.update_submissions(pid, 'WA', submit_code)
+                raise Msg.WrongAnswer(line+1, ans, user)
         self.update_submissions(pid, 'AC', submit_code)
         raise Msg.Accept()
 
@@ -136,6 +136,15 @@ class Main:
                     all_code += self.submissions[p]['code'] + '\n\n'
                     dumped_problem += f'#define __{p}__\n'
             self.dump(all_code, dumped_problem)
+
+    def get_status(self):
+        ret = dict()
+        for k in self.options['problem_list']:
+            ret[k] = '-'
+        for k in self.submissions:
+            if self.submissions[k]['result'] != '':
+                ret[k] = self.submissions[k]['result']
+        return ret
 
     def main(self):
         pass

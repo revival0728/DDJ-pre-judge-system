@@ -1,5 +1,5 @@
 # submit result
-class NotAccept(Exception):
+class WrongAnswer(Exception):
     def __init__(self, at_line: int, correct_output: str, user_output: str):
         self.correct_output = correct_output
         self.user_output = user_output
