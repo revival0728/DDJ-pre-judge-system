@@ -126,7 +126,7 @@ class Main:
         if self.options['mode'] == 'contest':
             raise Msg.ContestModeError('you cannot dump out the files before contest ended')
         if self.options['language'] in ('c++'):
-            self.dump(self.submissions[pid]['code'], f'#define__{pid}__')
+            self.dump(self.submissions[pid]['code'], f'#define __{pid}__')
 
     def dump_all(self):
         if self.options['language'] in ('c++'):

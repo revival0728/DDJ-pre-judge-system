@@ -145,6 +145,8 @@ You can enter the following command to "Submit" or "View a Problem"
                 self.output('system', 'submit file not found')
             except Msg.ProblemNotFound:
                 self.output('system', 'problem id not found')
+            except Msg.RuntimeError as sr:
+                self.output(_c('RE', 'red'), f'{_c("In stderr: ", "blue")}\n{sr.return_msg}')
 
     def output(self, pre_msg: str, msg: str):
         print(f'{_c("[", "cyan")}{pre_msg}{_c("]", "cyan")}: {msg}')
