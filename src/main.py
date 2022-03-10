@@ -7,6 +7,7 @@ import json
 import subprocess
 import webbrowser
 import pathlib
+import colorama
 
 class Main:
     def __init__(self):
@@ -150,5 +151,6 @@ class Main:
         pass
 
 if __name__ == '__main__':
+    colorama.init()
     program = IO.IO(Main)
     program.start()

@@ -2,11 +2,9 @@ import sys
 import os
 import Msg
 from termcolor import colored as _c
-import colorama
 
 class IO:
     def __init__(self, main_obj: object):
-        colorama.init()
         self.help_text = f'''\
 {_c("******************************************************************************************************", "cyan")}
 
