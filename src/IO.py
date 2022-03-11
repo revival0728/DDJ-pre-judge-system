@@ -107,7 +107,8 @@ You can enter the following command to "Submit" or "View a Problem"
         self._help()
         while True:
             try:
-                _input = input(f'{_c("[", "cyan")}In{_c("]", "cyan")}: ')
+                print(f'{_c("[", "cyan")}In{_c("]", "cyan")}: ', end='')
+                _input = input()
                 self.react.is_contest_over()
                 commands = _input.strip().split()
                 if len(commands) == 0:
